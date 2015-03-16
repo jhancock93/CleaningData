@@ -17,6 +17,11 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# RData files
+*.RData
+*.Rhistory
+UCI HAR Dataset
+
 # =========================
 # Operating System Files
 # =========================
@@ -41,3 +46,4 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+.Rproj.user
