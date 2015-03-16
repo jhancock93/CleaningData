@@ -21,6 +21,7 @@ $RECYCLE.BIN/
 *.RData
 *.Rhistory
 UCI HAR Dataset
+UCI HAR Dataset\*
 
 # =========================
 # Operating System Files
