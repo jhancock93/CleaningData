@@ -1,7 +1,7 @@
 ## Put comments here that give an overall description of what your
 ## functions do
 
-
+#downloads and unzips the HAR dataset to the "UCI HAR Dataset" directory if the directory does not exist
 get_har_data <- function()
 {
     if (!file.exists("UCI HAR Dataset"))
@@ -12,7 +12,9 @@ get_har_data <- function()
     }
 }
 
-## run_analysis takes the data set contained in the dataset and cleans it up
+## run_analysis takes the data set contained in the dataset, labels it
+## removes unwanted columns, and computes the mean for the remaining columns
+## grouped by subject and activity
 run_analysis <- function() {
     library(dplyr)
     get_har_data()
@@ -25,11 +27,17 @@ run_analysis <- function() {
     testsubject = read.table("test\\subject_test.txt")
     activities = read.table("activity_labels.txt")
     features = read.table("features.txt")
+    
+    #remove parenthesis pairs () from featureNames
+    featureNames = gsub("\\(\\)", "", features$V2)
+    
+    #replace remaining punctuation with underscore
+    featureNames = gsub("[[:punct:]]", "_", featureNames)
     setwd("..") #after reading the files, set the working directory back to the original
     
     ## Apply the feature names to the columns on trainx and testx sets
-    colnames(trainx) <- features$V2
-    colnames(testx) <- features$V2
+    colnames(trainx) <- featureNames
+    colnames(testx) <- featureNames
     
     ## Give appropriate column names to the activities frame
     colnames(activities) <- c("activity", "activityname")
@@ -45,13 +53,17 @@ run_analysis <- function() {
     ## Append the test set to the training set and put it in alldata
     alldata = rbind(trainx, testx)
     
+    #remove the columns with duplicate names. We don't need them anyway and they cause problems in the select
+    alldata = alldata[,!duplicated(colnames(alldata))]
+    
+    # now, select only the columns we need, the subject, the activity, and columns with "mean" or "std" in the name
+    subdata = select(alldata, matches("(subject)+|(activity)+|(mean)+|(std)+", ignore.case = FALSE))
+    
     ## Use merge to add an activity name to the combined data frame
-    alldata = merge(alldata, activities, by="activity")
+    subdata = merge(subdata, activities, by="activity")
+
+    grouped = group_by(subdata, subject, activity)
     
-    #subdata = select(alldata, subject, activity, #)
-    subact = group_by(alldata, subject, activity)
-    ##summarize(subact, )
-    
-    ##colMeans(subact)
+    finalresults = summarise_each(grouped, funs(mean))
 }
 
