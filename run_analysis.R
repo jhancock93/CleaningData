@@ -62,7 +62,7 @@ run_analysis <- function() {
     ## Use merge to add an activity name to the combined data frame
     subdata = merge(subdata, activities, by="activity")
 
-    grouped = group_by(subdata, subject, activity)
+    grouped = group_by(subdata, subject, activityname)
     
     finalresults = summarise_each(grouped, funs(mean))
 }
