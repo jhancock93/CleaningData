@@ -28,12 +28,9 @@ run_analysis <- function() {
     activities = read.table("activity_labels.txt")
     features = read.table("features.txt")
     
-    #remove parenthesis pairs () from featureNames
-    featureNames = gsub("\\(\\)", "", features$V2)
-    
-    #replace remaining punctuation with underscore
-    featureNames = gsub("[[:punct:]]", "_", featureNames)
     setwd("..") #after reading the files, set the working directory back to the original
+    
+    featureNames = features$V2
     
     ## Apply the feature names to the columns on trainx and testx sets
     colnames(trainx) <- featureNames
@@ -57,13 +54,32 @@ run_analysis <- function() {
     alldata = alldata[,!duplicated(colnames(alldata))]
     
     # now, select only the columns we need, the subject, the activity, and columns with "mean" or "std" in the name
-    subdata = select(alldata, matches("(subject)+|(activity)+|(mean)+|(std)+", ignore.case = FALSE))
+    subdata = select(alldata, matches("(subject)+|(activity)+|(mean\\(\\))+|(std\\(\\))+", ignore.case = FALSE))
+    
+    #remove punctuation characters in feature names
+    featureNames = gsub("[[:punct:]]", "", colnames(subdata))
+    colnames(subdata) <- featureNames
     
     ## Use merge to add an activity name to the combined data frame
     subdata = merge(subdata, activities, by="activity")
 
     grouped = group_by(subdata, subject, activityname)
-    
     finalresults = summarise_each(grouped, funs(mean))
 }
 
+# This produces information about each of the features in the resultant dataset
+generate_featuregroups_for_codebook <- function(data) {
+    labels = colnames(data)
+    glabels = substr(labels, 1, nchar(labels) - 1)
+    labeldata = data.frame(cbind(labels, glabels))
+    labeldata$labels = as.character(labeldata$labels)
+    labeldata$glabels = as.character(labeldata$glabels)
+    labelgroups = group_by(labeldata, glabels)
+}
+
+# This produces a markdown-compatible list of feature names in the dataset
+generate_featurelist_for_codebook <- function(data) {
+    labelgroups = generate_featuregroups_for_codebook(data)
+    fgs = summarize(labelgroups, features = paste(labels, sep = "", collapse = ", "), count = n())
+    cat(fgs$features, sep = "  \n * ")
+}
