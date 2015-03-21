@@ -80,12 +80,7 @@ generate_featuregroups_for_codebook <- function(data) {
 # This produces a markdown-compatible list of feature names in the dataset
 generate_featurelist_for_codebook <- function(data) {
     labelgroups = generate_featuregroups_for_codebook(data)
-    fgs = summarize(labelgroups, features = paste(labels, sep = "", collapse = ", "), count = n(),
-                    groupText = paste(glabels, "-XYZ", sep = "")
+    fgs = summarize(labelgroups, features = paste(labels, sep = "", collapse = ", "), count = n()
     )
-    cat(
-            if (fgs$count == 3) 
-                {fgs$groupText}
-            else { fgs$features }, sep = "  \n * ")
-    #cat(fgs$features, sep = "  \n * ")
+    cat(fgs$features, sep = "  \n * ")
 }
