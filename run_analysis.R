@@ -63,9 +63,9 @@ run_analysis <- function() {
     ## Use merge to add an activity name to the combined data frame
     subdata = merge(subdata, activities, by="activity")
 
-    grouped = group_by(subdata, subject, activityname)
-    finalresults = summarise_each(grouped, funs(mean))
+    subdata %>% group_by(subject, activityname) %>% summarise_each(funs(mean))
 }
+
 
 # This produces information about each of the features in the resultant dataset
 generate_featuregroups_for_codebook <- function(data) {
@@ -80,6 +80,12 @@ generate_featuregroups_for_codebook <- function(data) {
 # This produces a markdown-compatible list of feature names in the dataset
 generate_featurelist_for_codebook <- function(data) {
     labelgroups = generate_featuregroups_for_codebook(data)
-    fgs = summarize(labelgroups, features = paste(labels, sep = "", collapse = ", "), count = n())
-    cat(fgs$features, sep = "  \n * ")
+    fgs = summarize(labelgroups, features = paste(labels, sep = "", collapse = ", "), count = n(),
+                    groupText = paste(glabels, "-XYZ", sep = "")
+    )
+    cat(
+            if (fgs$count == 3) 
+                {fgs$groupText}
+            else { fgs$features }, sep = "  \n * ")
+    #cat(fgs$features, sep = "  \n * ")
 }
